@@ -1,0 +1,25 @@
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+android/
+ios/
+linux/
+macos/
+windows/
+web/
+*.iml
+*.class
+.idea/
+
+# Mantenemos el APK ya compilado versionado; solo ignoramos el resto
+# de artefactos de build de Flutter si algún día existieran aquí.
+build/*
+!build/Inspector.apk
+
+# Backend de verificación de correo
+backend/node_modules/
+backend/.env
+

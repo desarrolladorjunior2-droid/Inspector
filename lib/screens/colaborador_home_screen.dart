@@ -1,0 +1,249 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import '../core/app_colors.dart';
+import '../core/app_routes.dart';
+import '../core/bogota_localidades.dart';
+import '../models/solicitud.dart';
+import '../models/usuario.dart';
+import '../services/solicitud_service.dart';
+import '../widgets/app_buttons.dart';
+import '../widgets/bogota_map.dart';
+import '../widgets/map_bottom_panel.dart';
+import '../widgets/map_top_bar.dart';
+import '../widgets/solicitud_info_row.dart';
+import 'home_screen.dart';
+
+/// Pantalla principal del rol Colaborador: mapa de Bogotá con las
+/// solicitudes disponibles (como el conductor viendo viajes en Uber),
+/// más las que ya aceptó y tiene en curso.
+class ColaboradorHomeScreen extends StatefulWidget {
+  final Usuario usuario;
+  const ColaboradorHomeScreen({super.key, required this.usuario});
+
+  @override
+  State<ColaboradorHomeScreen> createState() => _ColaboradorHomeScreenState();
+}
+
+class _ColaboradorHomeScreenState extends State<ColaboradorHomeScreen> {
+  List<Solicitud> _pendientes = [];
+  List<Solicitud> _enCurso = [];
+  bool _cargandoInicial = true;
+  int? _procesandoId;
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarDatos();
+  }
+
+  Future<void> _cargarDatos() async {
+    final pendientes = await SolicitudService.solicitudesPendientes();
+    final enCurso = await SolicitudService.solicitudesEnCursoDeColaborador(
+      widget.usuario.id!,
+    );
+    if (!mounted) return;
+    setState(() {
+      _pendientes = pendientes;
+      _enCurso = enCurso;
+      _cargandoInicial = false;
+    });
+  }
+
+  Future<void> _aceptar(Solicitud solicitud) async {
+    setState(() => _procesandoId = solicitud.id);
+    await SolicitudService.aceptarSolicitud(
+      solicitudId: solicitud.id!,
+      colaboradorId: widget.usuario.id!,
+    );
+    await _cargarDatos();
+    if (mounted) setState(() => _procesandoId = null);
+  }
+
+  Future<void> _completar(Solicitud solicitud) async {
+    setState(() => _procesandoId = solicitud.id);
+    await SolicitudService.completarSolicitud(solicitud.id!);
+    await _cargarDatos();
+    if (mounted) setState(() => _procesandoId = null);
+  }
+
+  void _abrirPerfil() {
+    Navigator.of(context)
+        .push(AppRoutes.slide(HomeScreen(usuario: widget.usuario)));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final marcadores = [
+      ..._pendientes.map((s) => buildPinMarker(
+            punto: kLocalidadesBogota[s.localidad] ?? kBogotaCenter,
+          )),
+      ..._enCurso.map((s) => buildPinMarker(
+            punto: kLocalidadesBogota[s.localidad] ?? kBogotaCenter,
+            color: AppColors.success,
+            icon: Icons.directions_walk_rounded,
+          )),
+    ];
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          Positioned.fill(child: BogotaMap(marcadores: marcadores)),
+          MapTopBar(alias: widget.usuario.alias, onPerfil: _abrirPerfil),
+          if (!_cargandoInicial)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: MapBottomPanel(
+                maxHeightFraction: 0.55,
+                child: _ListaSolicitudes(
+                  pendientes: _pendientes,
+                  enCurso: _enCurso,
+                  procesandoId: _procesandoId,
+                  onAceptar: _aceptar,
+                  onCompletar: _completar,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ListaSolicitudes extends StatelessWidget {
+  final List<Solicitud> pendientes;
+  final List<Solicitud> enCurso;
+  final int? procesandoId;
+  final ValueChanged<Solicitud> onAceptar;
+  final ValueChanged<Solicitud> onCompletar;
+
+  const _ListaSolicitudes({
+    required this.pendientes,
+    required this.enCurso,
+    required this.procesandoId,
+    required this.onAceptar,
+    required this.onCompletar,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (pendientes.isEmpty && enCurso.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 24),
+        child: Column(
+          children: [
+            Icon(Icons.map_outlined, color: AppColors.textMuted, size: 32),
+            SizedBox(height: 10),
+            Text(
+              'No hay solicitudes por ahora',
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (enCurso.isNotEmpty) ...[
+            const Text(
+              'En curso',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 10),
+            ...enCurso.map(
+              (s) => _SolicitudCard(
+                solicitud: s,
+                cargando: procesandoId == s.id,
+                accionLabel: 'MARCAR COMPLETADA',
+                onAccion: () => onCompletar(s),
+              ),
+            ),
+            const SizedBox(height: 18),
+          ],
+          const Text(
+            'Solicitudes disponibles',
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 10),
+          if (pendientes.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                'No hay solicitudes pendientes en este momento',
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+              ),
+            )
+          else
+            ...pendientes.map(
+              (s) => _SolicitudCard(
+                solicitud: s,
+                cargando: procesandoId == s.id,
+                accionLabel: 'ACEPTAR',
+                onAccion: () => onAceptar(s),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SolicitudCard extends StatelessWidget {
+  final Solicitud solicitud;
+  final bool cargando;
+  final String accionLabel;
+  final VoidCallback onAccion;
+
+  const _SolicitudCard({
+    required this.solicitud,
+    required this.cargando,
+    required this.accionLabel,
+    required this.onAccion,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceVariant,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SolicitudInfoRow(
+            icono: solicitud.tipo == TipoSolicitud.texto
+                ? Icons.description_outlined
+                : Icons.image_outlined,
+            texto: solicitud.tipo.etiqueta,
+          ),
+          SolicitudInfoRow(
+              icono: Icons.place_outlined, texto: solicitud.localidad),
+          SolicitudInfoRow(
+              icono: Icons.notes_outlined, texto: solicitud.descripcion),
+          const SizedBox(height: 10),
+          PrimaryButton(
+            label: accionLabel,
+            isLoading: cargando,
+            onPressed: onAccion,
+          ),
+        ],
+      ),
+    );
+  }
+}
