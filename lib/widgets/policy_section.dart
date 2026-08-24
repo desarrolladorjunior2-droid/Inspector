@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 
@@ -9,19 +10,17 @@ const String kPoliticaTratamientoDatos =
     'aplicación. Puedes solicitar la eliminación de tus datos en '
     'cualquier momento desde la configuración de la app.';
 
-const String kDeclaracionMayoriaEdad =
-    'Declaro que soy mayor de 18 años. En caso de ser menor de edad, '
-    'entiendo que es mi responsabilidad y la de mi acudiente el uso de '
-    'esta aplicación, eximiendo a Inspector de cualquier responsabilidad '
-    'al respecto.';
+const String kDeclaracionMayoriaEdad = 'Declaro que soy mayor de 18 años.';
 
-/// Sección de políticas del formulario de registro: acordeón con el
-/// texto de tratamiento de datos y los dos checkboxes obligatorios.
-class PolicySection extends StatefulWidget {
+/// Sección de políticas del formulario de registro: los dos checkboxes
+/// obligatorios. El primero incluye un link para leer la política
+/// completa en una pantalla aparte.
+class PolicySection extends StatelessWidget {
   final bool aceptoPoliticas;
   final bool declaraMayorEdad;
   final ValueChanged<bool> onAceptoPoliticasChanged;
   final ValueChanged<bool> onDeclaraMayorEdadChanged;
+  final VoidCallback onVerPolitica;
 
   const PolicySection({
     super.key,
@@ -29,14 +28,8 @@ class PolicySection extends StatefulWidget {
     required this.declaraMayorEdad,
     required this.onAceptoPoliticasChanged,
     required this.onDeclaraMayorEdadChanged,
+    required this.onVerPolitica,
   });
-
-  @override
-  State<PolicySection> createState() => _PolicySectionState();
-}
-
-class _PolicySectionState extends State<PolicySection> {
-  bool _expandido = false;
 
   @override
   Widget build(BuildContext context) {
@@ -49,31 +42,43 @@ class _PolicySectionState extends State<PolicySection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Theme(
-            data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-            child: ExpansionTile(
-              initiallyExpanded: _expandido,
-              onExpansionChanged: (v) => setState(() => _expandido = v),
-              tilePadding: const EdgeInsets.symmetric(horizontal: 16),
-              iconColor: AppColors.accent,
-              collapsedIconColor: AppColors.textSecondary,
-              title: const Text(
-                'Política de Tratamiento de Datos',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
-                  fontSize: 14,
+          // Sin InkWell envolvente: el texto incluye un link tapable
+          // propio (la política), así que solo el checkbox alterna el
+          // valor para no competir por el mismo gesto con el link.
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 4, 16, 4),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Checkbox(
+                  value: aceptoPoliticas,
+                  onChanged: (v) => onAceptoPoliticasChanged(v ?? false),
                 ),
-              ),
-              children: const [
-                Padding(
-                  padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
-                  child: Text(
-                    kPoliticaTratamientoDatos,
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 13,
-                      height: 1.5,
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: RichText(
+                      text: TextSpan(
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 12.5,
+                          height: 1.4,
+                        ),
+                        children: [
+                          const TextSpan(text: 'He leído y acepto la '),
+                          TextSpan(
+                            text: 'Política de Tratamiento de Datos',
+                            style: const TextStyle(
+                              color: AppColors.accent,
+                              decoration: TextDecoration.underline,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = onVerPolitica,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -82,15 +87,16 @@ class _PolicySectionState extends State<PolicySection> {
           ),
           const Divider(height: 1, color: AppColors.border),
           _PolicyCheckbox(
-            value: widget.aceptoPoliticas,
-            onChanged: widget.onAceptoPoliticasChanged,
-            label:
-                'He leído y acepto la Política de Tratamiento de Datos',
-          ),
-          _PolicyCheckbox(
-            value: widget.declaraMayorEdad,
-            onChanged: widget.onDeclaraMayorEdadChanged,
-            label: kDeclaracionMayoriaEdad,
+            value: declaraMayorEdad,
+            onChanged: onDeclaraMayorEdadChanged,
+            child: const Text(
+              kDeclaracionMayoriaEdad,
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 12.5,
+                height: 1.4,
+              ),
+            ),
           ),
         ],
       ),
@@ -101,12 +107,12 @@ class _PolicySectionState extends State<PolicySection> {
 class _PolicyCheckbox extends StatelessWidget {
   final bool value;
   final ValueChanged<bool> onChanged;
-  final String label;
+  final Widget child;
 
   const _PolicyCheckbox({
     required this.value,
     required this.onChanged,
-    required this.label,
+    required this.child,
   });
 
   @override
@@ -126,14 +132,7 @@ class _PolicyCheckbox extends StatelessWidget {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(top: 12),
-                child: Text(
-                  label,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 12.5,
-                    height: 1.4,
-                  ),
-                ),
+                child: child,
               ),
             ),
           ],

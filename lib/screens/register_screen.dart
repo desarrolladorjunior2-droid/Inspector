@@ -5,6 +5,7 @@ import '../services/auth_service.dart';
 import '../widgets/app_buttons.dart';
 import '../widgets/policy_section.dart';
 import 'email_verification_screen.dart';
+import 'policy_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -196,6 +197,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     setState(() => _aceptoPoliticas = v),
                 onDeclaraMayorEdadChanged: (v) =>
                     setState(() => _declaraMayorEdad = v),
+                onVerPolitica: () {
+                  Navigator.of(context)
+                      .push(AppRoutes.slide(const PolicyScreen()));
+                },
               ),
               const SizedBox(height: 28),
               PrimaryButton(
