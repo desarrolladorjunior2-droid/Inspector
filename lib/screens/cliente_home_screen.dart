@@ -181,6 +181,12 @@ class _PanelFormulario extends StatelessWidget {
               fontWeight: FontWeight.w700,
             ),
           ),
+          const SizedBox(height: 4),
+          const Text(
+            'Elige si el colaborador debe traerte texto (un informe '
+            'escrito) o una imagen del lugar.',
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+          ),
           const SizedBox(height: 14),
           Row(
             children: [
@@ -210,6 +216,8 @@ class _PanelFormulario extends StatelessWidget {
             style: const TextStyle(color: AppColors.textPrimary),
             decoration: const InputDecoration(
               labelText: 'Describe lo que quieres solicitar',
+              helperText: 'Sé específico: qué información o imagen '
+                  'necesitas y de qué lugar exactamente',
             ),
           ),
           const SizedBox(height: 14),
@@ -219,6 +227,8 @@ class _PanelFormulario extends StatelessWidget {
             style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
             decoration: const InputDecoration(
               labelText: 'Localidad donde se obtendrá la información',
+              helperText: 'El colaborador que acepte tu solicitud irá a '
+                  'esta localidad de Bogotá',
             ),
             items: kLocalidadesBogota.keys
                 .map((l) => DropdownMenuItem(value: l, child: Text(l)))

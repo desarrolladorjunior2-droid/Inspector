@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 import '../core/app_routes.dart';
 import '../widgets/app_buttons.dart';
+import '../widgets/app_info_dialog.dart';
 import 'login_screen.dart';
 import 'register_screen.dart';
 
@@ -26,6 +27,9 @@ class _SplashScreenState extends State<SplashScreen>
     );
     _fade = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
     _controller.forward();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) mostrarInfoDeLaApp(context);
+    });
   }
 
   @override
@@ -39,7 +43,19 @@ class _SplashScreenState extends State<SplashScreen>
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: FadeTransition(
+        child: Stack(
+          children: [
+            Positioned(
+              top: 4,
+              right: 4,
+              child: IconButton(
+                onPressed: () => mostrarInfoDeLaApp(context),
+                icon: const Icon(Icons.info_outline,
+                    color: AppColors.textSecondary),
+                tooltip: '¿Qué es Inspector?',
+              ),
+            ),
+            FadeTransition(
           opacity: _fade,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -90,6 +106,8 @@ class _SplashScreenState extends State<SplashScreen>
               ],
             ),
           ),
+            ),
+          ],
         ),
       ),
     );

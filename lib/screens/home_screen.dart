@@ -479,7 +479,10 @@ class _DatosProfesionalesCard extends StatelessWidget {
           TextField(
             controller: ocupacionCtrl,
             style: const TextStyle(color: AppColors.textPrimary),
-            decoration: const InputDecoration(labelText: 'Ocupación'),
+            decoration: const InputDecoration(
+              labelText: 'Ocupación',
+              helperText: 'Ej: fotógrafo, redactor, investigador de campo',
+            ),
           ),
           const SizedBox(height: 14),
           DropdownButtonFormField<String>(
@@ -488,6 +491,8 @@ class _DatosProfesionalesCard extends StatelessWidget {
             style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
             decoration: const InputDecoration(
               labelText: 'Localidad donde quiere trabajar',
+              helperText: 'La localidad de Bogotá donde prefieres atender '
+                  'solicitudes',
             ),
             items: kLocalidadesBogota.keys
                 .map((l) => DropdownMenuItem(value: l, child: Text(l)))

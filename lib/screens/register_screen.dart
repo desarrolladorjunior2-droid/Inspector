@@ -95,7 +95,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
               TextFormField(
                 controller: _nombreCtrl,
                 textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(labelText: 'Nombre completo'),
+                decoration: const InputDecoration(
+                  labelText: 'Nombre completo',
+                  helperText: 'Tu nombre y apellido, como te identificas',
+                ),
                 validator: (v) => (v == null || v.trim().isEmpty)
                     ? 'Ingresa tu nombre completo'
                     : null,
@@ -104,7 +107,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
               TextFormField(
                 controller: _edadCtrl,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Edad'),
+                decoration: const InputDecoration(
+                  labelText: 'Edad',
+                  helperText: 'Tu edad en años (debes declarar si eres mayor '
+                      'de 18 más abajo)',
+                ),
                 validator: (v) {
                   final edad = int.tryParse((v ?? '').trim());
                   if (edad == null) return 'Ingresa una edad válida';
@@ -116,7 +123,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
               TextFormField(
                 controller: _correoCtrl,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(labelText: 'Correo electrónico'),
+                decoration: const InputDecoration(
+                  labelText: 'Correo electrónico',
+                  helperText: 'Te enviaremos un código para verificarlo '
+                      'antes de crear la cuenta',
+                ),
                 validator: (v) {
                   if (v == null || v.trim().isEmpty) {
                     return 'Ingresa tu correo electrónico';
@@ -133,6 +144,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 obscureText: _ocultarContrasena,
                 decoration: InputDecoration(
                   labelText: 'Contraseña',
+                  helperText: 'Mínimo 6 caracteres',
                   suffixIcon: IconButton(
                     icon: Icon(
                       _ocultarContrasena
@@ -157,6 +169,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 obscureText: _ocultarConfirmar,
                 decoration: InputDecoration(
                   labelText: 'Confirmar contraseña',
+                  helperText: 'Escribe la misma contraseña otra vez',
                   suffixIcon: IconButton(
                     icon: Icon(
                       _ocultarConfirmar

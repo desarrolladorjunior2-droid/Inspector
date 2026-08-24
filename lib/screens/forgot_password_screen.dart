@@ -145,13 +145,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       TextField(
         controller: _nuevaCtrl,
         obscureText: true,
-        decoration: const InputDecoration(labelText: 'Nueva contraseña'),
+        decoration: const InputDecoration(
+          labelText: 'Nueva contraseña',
+          helperText: 'Mínimo 6 caracteres',
+        ),
       ),
       const SizedBox(height: 16),
       TextField(
         controller: _confirmarCtrl,
         obscureText: true,
-        decoration: const InputDecoration(labelText: 'Confirmar nueva contraseña'),
+        decoration: const InputDecoration(
+          labelText: 'Confirmar nueva contraseña',
+          helperText: 'Escribe la misma contraseña otra vez',
+        ),
       ),
       const SizedBox(height: 20),
       PrimaryButton(

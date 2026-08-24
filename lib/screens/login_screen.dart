@@ -82,7 +82,10 @@ class _LoginScreenState extends State<LoginScreen> {
               TextFormField(
                 controller: _correoCtrl,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(labelText: 'Correo electrónico'),
+                decoration: const InputDecoration(
+                  labelText: 'Correo electrónico',
+                  helperText: 'El correo con el que creaste tu cuenta',
+                ),
                 validator: (v) => (v == null || v.trim().isEmpty)
                     ? 'Ingresa tu correo electrónico'
                     : null,
@@ -93,6 +96,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 obscureText: _ocultarContrasena,
                 decoration: InputDecoration(
                   labelText: 'Contraseña',
+                  helperText: 'Si tienes verificación en dos pasos activada, '
+                      'te pediremos el código después',
                   suffixIcon: IconButton(
                     icon: Icon(
                       _ocultarContrasena

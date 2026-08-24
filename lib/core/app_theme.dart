@@ -64,6 +64,8 @@ class AppTheme {
         ),
         labelStyle: const TextStyle(color: AppColors.textSecondary),
         hintStyle: const TextStyle(color: AppColors.textMuted),
+        helperStyle: const TextStyle(color: AppColors.textMuted, fontSize: 11.5),
+        helperMaxLines: 2,
       ),
       checkboxTheme: CheckboxThemeData(
         fillColor: WidgetStateProperty.resolveWith((states) {
